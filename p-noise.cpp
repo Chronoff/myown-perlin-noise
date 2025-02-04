@@ -7,18 +7,20 @@ const float PI = 3.14159;
 const unsigned int HE = 10;
 const unsigned int WI = 10;
 
-float getGradientAngle(int seed1, int seed2, int seed3) { // THIS IS FUCKING ME
-    // Combine the seeds to create a unique seed for the random engine
-    unsigned long long combinedSeed = (static_cast<unsigned long long>(seed1) << 32) | (static_cast<unsigned long long>(seed2) << 16) | seed3;
+int hash(int x, int y, int seed)
+{
+	int result = y ^ x ^ seed;
+	result *= 0x45d9f3b;
+	result ^= result >> 4;
+	result *= 0xc2b2ae35;
+	result ^= result >> 11;
+	return result;
+}
 
-    // Initialize the random number generator with the combined seed
-    std::mt19937 rng(combinedSeed);
-    
-    // Define the range for the random float [0, 2*pi]
-    std::uniform_real_distribution<float> dist(0.0f, 2.0f * PI);
-
-    // Generate a random float within the range
-    return dist(rng);
+float getGradientAngle(int seed1, int seed2, int seed3)
+{
+	int result = hash(seed1, seed2, seed3);
+	return result%static_cast<int>(2*PI*10000+1)/10000.0;
 }
 
 int simpleHash(int a, int b) {
@@ -27,7 +29,7 @@ int simpleHash(int a, int b) {
 
 float fadeFunction(float t) // t between 0 and 1
 {
-	return 6*std::pow(t, 5) - 15*std::pow(t, 4) + 10*std::pow(t, 3);
+	return 6*std::pow(t, 5) - 15*std::pow(t, 4) + 10*std::pow(t, 3); // this works
 }
 
 
@@ -82,9 +84,9 @@ float makePerlinNoise(float x, float y, int seed)
 	float i1, i0;
 
 	Vector2 ve1(grid_x, grid_y, x-grid_x, y-grid_y, seed); // i am sorry for this abomination
-	Vector2 ve2(grid_x+1, grid_y, x-grid_x+1, y-grid_y, seed);
-	Vector2 ve3(grid_x, grid_y+1, x-grid_x, y-grid_y+1, seed);
-	Vector2 ve4(grid_x+1, grid_y+1, x-grid_x+1, y-grid_y+1, seed); // corner vectors should be setup
+	Vector2 ve2(grid_x+1, grid_y, x-(grid_x+1), y-grid_y, seed);
+	Vector2 ve3(grid_x, grid_y+1, x-grid_x, y-(grid_y+1), seed);
+	Vector2 ve4(grid_x+1, grid_y+1, x-(grid_x+1), y-(grid_y+1), seed); // corner vectors should be setup
 
 	dot1 = ve1.dotProduct(); // dot products between ofset and gradient vector of all 4 corners
 	dot2 = ve2.dotProduct();
@@ -97,7 +99,7 @@ float makePerlinNoise(float x, float y, int seed)
 	i0 = (1-x_axis_fade)*dot1 + x_axis_fade*dot2; //interpolate along axis
 	i1 = (1-x_axis_fade)*dot3 + x_axis_fade*dot4;
 
-	return ((1 - y_axis_fade) * i0 + y_axis_fade * i1) * 0.5f; // Normalize output
+	return ((1 - y_axis_fade) * i0 + y_axis_fade * i1) * 2 + 0.4; // Normalize output
 }
 
 int main()
