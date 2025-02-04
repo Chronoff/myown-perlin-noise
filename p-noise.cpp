@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <cmath>
-#include <random>
 
 const float PI = 3.14159;
 const unsigned int HE = 10;
@@ -99,26 +98,31 @@ float makePerlinNoise(float x, float y, int seed)
 	i0 = (1-x_axis_fade)*dot1 + x_axis_fade*dot2; //interpolate along axis
 	i1 = (1-x_axis_fade)*dot3 + x_axis_fade*dot4;
 
-	return ((1 - y_axis_fade) * i0 + y_axis_fade * i1) * 2 + 0.4; // Normalize output
+	return ((1 - y_axis_fade) * i0 + y_axis_fade * i1) * 2;
+	}
+
+float combined(float x, float y, int seed)
+{
+	return ((makePerlinNoise(x*4, y*4, seed)/2) + (makePerlinNoise(x, y, seed)))/1.5; 
 }
 
 int main()
 {
 	unsigned int seed = 54525364;
-	std::cout << getGradientAngle(1, 1, seed) << std::endl;
+	std::cout << makePerlinNoise(1.3, 1.6, seed) << std::endl;
 	std::cout << getGradientAngle(1, 3, seed) << std::endl;
 	std::cout << getGradientAngle(7, 2, seed) << std::endl;
 	for (float y = 0.11; y < 3; y += 0.05)
 	{
 		for (float x = 0.11; x < 3; x += 0.05)
 		{
-			if (makePerlinNoise(x, y, seed) > 0.75) {std::cout << "." << " ";}
-			else if (makePerlinNoise(x, y, seed) > 0.5) {std::cout << "_" << " ";}
-			else if (makePerlinNoise(x, y, seed) > 0.25) {std::cout << "+" << " ";}
-			else if (makePerlinNoise(x, y, seed) > 0) {std::cout << "| ";}
-			else if (makePerlinNoise(x, y, seed) > -0.75) {std::cout << "O" << " ";}
-			else if (makePerlinNoise(x, y, seed) > -0.5) {std::cout << "Q" << " ";}
-			else {std::cout << "~" << " ";}
+			if (combined(x, y, seed) > 0.75) {std::cout << "." << " ";}
+			else if (combined(x, y, seed) > 0.5) {std::cout << "_" << " ";}
+			else if (combined(x, y, seed) > 0.25) {std::cout << "+" << " ";}
+			else if (combined(x, y, seed) > 0) {std::cout << "| ";}
+			else if (combined(x, y, seed) > -0.25) {std::cout << "O" << " ";}
+			else if (combined(x, y, seed) > -0.5) {std::cout << "Q" << " ";}
+			else {std::cout << "8 ";}
 			
 			//std::cout << makePerlinNoise(x, y, seed) << " ";
 		}
