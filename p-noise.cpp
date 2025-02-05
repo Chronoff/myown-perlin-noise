@@ -1,6 +1,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <cmath>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 
 const float PI = 3.14159;
 const unsigned int HE = 10;
@@ -103,8 +106,32 @@ float makePerlinNoise(float x, float y, int seed)
 
 float combined(float x, float y, int seed)
 {
-	return ((makePerlinNoise(x*4, y*4, seed)/2) + (makePerlinNoise(x, y, seed)))/1.5; 
+	//return ((makePerlinNoise(x*4, y*4, seed)/5) + (makePerlinNoise(x, y, seed)))*(5/6.0); 
+	return makePerlinNoise(x, y, seed);
 }
+
+void makeBitmap(int seed)
+{
+	int width = 1024, height = 1024; // pixels
+	unsigned char image[1024*1024*3]; // pixels times size of pixel in bytes
+	float vecDis = 1024/3.0;
+	for (int y = 0; y < height; y++)
+	{
+        	for (int x = 0; x < width; x++)
+		{
+            	int index = (y * width + x) * 3;
+		int z = (combined(x/vecDis, y/vecDis, seed))*128 + 128;
+		if (z > 256){z = 256;}
+		else if (z < 0){z = 0;}
+            	image[index] = z;
+		image[index + 1] = z;
+            	image[index + 2] = z;
+        	}
+    	}
+
+	stbi_write_bmp("output.bmp", width, height, 3, image);
+}
+
 
 int main()
 {
@@ -128,6 +155,7 @@ int main()
 		}
 		std::cout << std::endl;
 	}
+	makeBitmap(seed);
 	
 		
 	return 0;
