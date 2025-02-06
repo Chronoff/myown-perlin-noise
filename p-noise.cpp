@@ -106,9 +106,27 @@ float makePerlinNoise(float x, float y, int seed)
 
 float combined(float x, float y, int seed)
 {
+	float result = makePerlinNoise(x, y, seed)*(2/3.0) + makePerlinNoise(x*2, y*2, seed)*(1/3.0);
+	
+
 	//return ((makePerlinNoise(x*4, y*4, seed)/5) + (makePerlinNoise(x, y, seed)))*(5/6.0); 
-	return makePerlinNoise(x, y, seed);
+	return result;
 }
+
+float fractalNoise(float x, float y, int seed, int iteration)
+{
+	float result = makePerlinNoise(x, y, seed);
+	int res;
+
+	for (int i = 0; i <= iteration; i++)
+	{
+		res = std::pow(2, i);
+		result = result*(res/(res+1.0)) + makePerlinNoise(x*res, y*res, seed)*(1/(res+1.0));
+	}
+
+	return result;
+}
+
 
 void makeBitmap(int seed)
 {
@@ -120,7 +138,7 @@ void makeBitmap(int seed)
         	for (int x = 0; x < width; x++)
 		{
             	int index = (y * width + x) * 3;
-		int z = (combined(x/vecDis, y/vecDis, seed))*128 + 128;
+		int z = (fractalNoise(x/vecDis, y/vecDis, seed, 10))*128 + 128;
 		if (z > 256){z = 256;}
 		else if (z < 0){z = 0;}
             	image[index] = z;
